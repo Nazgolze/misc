@@ -32,8 +32,7 @@ def gol2(timg, tdrawable):
     f = t.filename
     for i in xrange(0, 100, 1):
         gol(t, td)
-        td = t.layers[0]	
-	
+        td = t.layers[0]
 
 def gol(timg, tdrawable):
     begin = time.time() 
@@ -54,67 +53,67 @@ def gol(timg, tdrawable):
     test = 0
     for i in xrange(0, width, 1):
         for j in xrange(0, height, 1):
-	    #next line will create a list with color and list of neighbors
-	    #list_of_cells[(i, j)] = [pr[i, j], make(i, j, width, height)]
-	    for z in make(i,j,width,height):
-	        if pr[z[0],z[1]] != (chr(0) + chr(0) + chr(0) + chr(255)):
-		    test = test + 1
-	    if pr[i,j] != (chr(0) + chr(0) + chr(0) + chr(255)) or test > 0:
-	        cell_list.append([[i,j], make(i, j, width, height), pr[i,j]])
-		test = 0
-	    counter = counter + 1
-	    percent = counter / (1.0*width*height*4)
-	    gimp.progress_update(percent)
+            #next line will create a list with color and list of neighbors
+            #list_of_cells[(i, j)] = [pr[i, j], make(i, j, width, height)]
+            for z in make(i,j,width,height):
+                if pr[z[0],z[1]] != (chr(0) + chr(0) + chr(0) + chr(255)):
+                    test = test + 1
+            if pr[i,j] != (chr(0) + chr(0) + chr(0) + chr(255)) or test > 0:
+                cell_list.append([[i,j], make(i, j, width, height), pr[i,j]])
+                test = 0
+            counter = counter + 1
+            percent = counter / (1.0*width*height*4)
+            gimp.progress_update(percent)
     counter = 0
     for i in cell_list:
         temp = 0
-	counter = counter + 1.0
-	percent = .25 + (counter / (len(cell_list)*4.0))
-	gimp.progress_update(percent)
-	l_color = []
-	for j in i[1]:	    
-	    if pr[j[0],j[1]] != (chr(0) + chr(0) + chr(0) + chr(255)):	        
-	        temp = temp + 1
-	if pr[i[0][0],i[0][1]] == (chr(0) + chr(0) + chr(0) + chr(255)) and (temp == 3 or temp == 6):
-	    livelist.append(i)
-	    counterx = 0
-    	    r = 0
-	    g = 0
-	    b = 0
-	    for x in i[1]:
-	        if pr[x[0],x[1]] != '\x00\x00\x00\xff':
-	            rtemp = ord(pr[x[0],x[1]][0])
-	            gtemp = ord(pr[x[0],x[1]][1])
-	            btemp = ord(pr[x[0],x[1]][2])
-	            r = r + rtemp
-	            g = g + gtemp
-	            b = b + btemp
-	            counterx = counterx + 1
-	    r = (r / counterx) 
-	    g = (g / counterx) 
-	    b = (b / counterx)
-	    color_change_list.append([i[0], (chr(r) + chr(g) + chr(b) + chr(255))])
-	elif pr[i[0][0],i[0][1]] != (chr(0) + chr(0) + chr(0) + chr(255)) and temp >=2 and temp <= 3:
-	    #i[2] = chr(255) + chr(255) + chr(255) + chr(255)
-	    livelist.append(i)
-	else:
-	    deathlist.append(i[0])
+        counter = counter + 1.0
+        percent = .25 + (counter / (len(cell_list)*4.0))
+        gimp.progress_update(percent)
+        l_color = []
+        for j in i[1]:	    
+            if pr[j[0],j[1]] != (chr(0) + chr(0) + chr(0) + chr(255)):	        
+                temp = temp + 1
+        if pr[i[0][0],i[0][1]] == (chr(0) + chr(0) + chr(0) + chr(255)) and (temp == 3 or temp == 6):
+            livelist.append(i)
+            counterx = 0
+            r = 0
+            g = 0
+            b = 0
+            for x in i[1]:
+                if pr[x[0],x[1]] != '\x00\x00\x00\xff':
+                    rtemp = ord(pr[x[0],x[1]][0])
+                    gtemp = ord(pr[x[0],x[1]][1])
+                    btemp = ord(pr[x[0],x[1]][2])
+                    r = r + rtemp
+                    g = g + gtemp
+                    b = b + btemp
+                    counterx = counterx + 1
+            r = (r / counterx) 
+            g = (g / counterx) 
+            b = (b / counterx)
+            color_change_list.append([i[0], (chr(r) + chr(g) + chr(b) + chr(255))])
+        elif pr[i[0][0],i[0][1]] != (chr(0) + chr(0) + chr(0) + chr(255)) and temp >=2 and temp <= 3:
+            #i[2] = chr(255) + chr(255) + chr(255) + chr(255)
+            livelist.append(i)
+        else:
+            deathlist.append(i[0])
     counter = 0
     for i in deathlist:
         counter = counter + 1
         percent = .50 + (counter / (len(deathlist)*4.0))
-	gimp.progress_update(percent)
+        gimp.progress_update(percent)
         pr[i[0],i[1]] = (chr(0) + chr(0) + chr(0) + chr(255))
     counter = 0
     for i in livelist:
         counter = counter + 1
         percent = .75 + (counter / (len(livelist)*4.0))
-	gimp.progress_update(percent)
+        gimp.progress_update(percent)
         #pr[i[0][0],i[0][1]] = (chr(255) + chr(255) + chr(255) + chr(255))
         #pr[i[0][0],i[0][1]] = (chr(i[2][0]) + chr(i[2][1]) + chr(i[2][2]) + chr(255))
-	pr[i[0][0],i[0][1]] = i[2]
+        pr[i[0][0],i[0][1]] = i[2]
     for i in color_change_list:
-	pr[i[0][0],i[0][1]] = i[1]
+        pr[i[0][0],i[0][1]] = i[1]
     gimp.progress_update(100)
     l.flush() 
     timg.flatten()
