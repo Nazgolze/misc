@@ -76,7 +76,7 @@ def gol(timg, tdrawable):
             for j in i[1]:	    
                 if pr[j[0],j[1]] != (chr(bgcolor) + chr(bgcolor) + chr(bgcolor) + chr(255)):	        
                     temp = temp + 1
-            if pr[i[0][0],i[0][1]] == (chr(bgcolor) + chr(bgcolor) + chr(bgcolor) + chr(255)) and (temp == 3 or temp == 3):
+            if pr[i[0][0],i[0][1]] == (chr(bgcolor) + chr(bgcolor) + chr(bgcolor) + chr(255)) and (temp == 2 or temp == 3):
                 livelist.append(i)
                 counterx = 0
                 r = 0
