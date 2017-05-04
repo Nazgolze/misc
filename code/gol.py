@@ -19,7 +19,7 @@
 
 import math
 from gimpfu import *
-import random 
+import random
 import string
 import time
 
@@ -34,16 +34,26 @@ def gol2(timg, tdrawable):
         gol(t, td)
         td = t.layers[0]
 
-def gol(timg, tdrawable):
-    bgcolor = 255 
+def gol(timg, tdrawable, automata, color):
+    bgcolorR = int(color[1:3], 16)
+    bgcolorG = int(color[3:5], 16)
+    bgcolorB = int(color[5:], 16)
     def gol_basic():
-        begin = time.time() 
+        begin = time.time()
         width = tdrawable.width
         height = tdrawable.height
         l = timg.active_layer
         l.add_alpha()
         pr = l.get_pixel_rgn(0, 0, width, height)
-        
+
+        temp = automata.split("/")
+        new_automata = [int(x) for x in temp[0]]
+        survive_automata = [int(x) for x in temp[1]]
+
+        #favorites: 24/236
+        #           2345/35
+        #      gol: 3/23
+
         #list_of_cells = {}
         cell_list = []
         livelist = []
@@ -58,9 +68,9 @@ def gol(timg, tdrawable):
                 #next line will create a list with color and list of neighbors
                 #list_of_cells[(i, j)] = [pr[i, j], make(i, j, width, height)]
                 for z in make(i,j,width,height):
-                    if pr[z[0],z[1]] != (chr(bgcolor) + chr(bgcolor) + chr(bgcolor) + chr(255)):
+                    if pr[z[0],z[1]] != (chr(bgcolorR) + chr(bgcolorG) + chr(bgcolorB) + chr(255)):
                         test = test + 1
-                if pr[i,j] != (chr(bgcolor) + chr(bgcolor) + chr(bgcolor) + chr(255)) or test > 0:
+                if pr[i,j] != (chr(bgcolorR) + chr(bgcolorG) + chr(bgcolorB) + chr(255)) or test > 0:
                     cell_list.append([[i,j], make(i, j, width, height), pr[i,j]])
                     test = 0
                 counter = counter + 1
@@ -73,17 +83,17 @@ def gol(timg, tdrawable):
             percent = .25 + (counter / (len(cell_list)*4.0))
             gimp.progress_update(percent)
             l_color = []
-            for j in i[1]:	    
-                if pr[j[0],j[1]] != (chr(bgcolor) + chr(bgcolor) + chr(bgcolor) + chr(255)):	        
+            for j in i[1]:
+                if pr[j[0],j[1]] != (chr(bgcolorR) + chr(bgcolorG) + chr(bgcolorB) + chr(255)):
                     temp = temp + 1
-            if pr[i[0][0],i[0][1]] == (chr(bgcolor) + chr(bgcolor) + chr(bgcolor) + chr(255)) and (temp == 2 or temp == 3):
+            if pr[i[0][0],i[0][1]] == (chr(bgcolorR) + chr(bgcolorG) + chr(bgcolorB) + chr(255)) and (temp in new_automata):
                 livelist.append(i)
                 counterx = 0
                 r = 0
                 g = 0
                 b = 0
                 for x in i[1]:
-                    if pr[x[0],x[1]] != (chr(bgcolor) + chr(bgcolor) + chr(bgcolor) + chr(255)):
+                    if pr[x[0],x[1]] != (chr(bgcolorR) + chr(bgcolorG) + chr(bgcolorB) + chr(255)):
                         rtemp = ord(pr[x[0],x[1]][0])
                         gtemp = ord(pr[x[0],x[1]][1])
                         btemp = ord(pr[x[0],x[1]][2])
@@ -91,11 +101,11 @@ def gol(timg, tdrawable):
                         g = g + gtemp
                         b = b + btemp
                         counterx = counterx + 1
-                r = (r / counterx) 
-                g = (g / counterx) 
+                r = (r / counterx)
+                g = (g / counterx)
                 b = (b / counterx)
                 color_change_list.append([i[0], (chr(r) + chr(g) + chr(b) + chr(255))])
-            elif pr[i[0][0],i[0][1]] != (chr(bgcolor) + chr(bgcolor) + chr(bgcolor) + chr(255)) and temp >=1 and temp <= 5:
+            elif pr[i[0][0],i[0][1]] != (chr(bgcolorR) + chr(bgcolorG) + chr(bgcolorB) + chr(255)) and (temp in survive_automata):
                 #i[2] = chr(255) + chr(255) + chr(255) + chr(255)
                 livelist.append(i)
             else:
@@ -105,7 +115,7 @@ def gol(timg, tdrawable):
             counter = counter + 1
             percent = .50 + (counter / (len(deathlist)*4.0))
             gimp.progress_update(percent)
-            pr[i[0],i[1]] = (chr(bgcolor) + chr(bgcolor) + chr(bgcolor) + chr(255))
+            pr[i[0],i[1]] = (chr(bgcolorR) + chr(bgcolorG) + chr(bgcolorB) + chr(255))
         counter = 0
         for i in livelist:
             counter = counter + 1
@@ -117,7 +127,7 @@ def gol(timg, tdrawable):
         for i in color_change_list:
             pr[i[0][0],i[0][1]] = i[1]
         gimp.progress_update(100)
-        l.flush() 
+        l.flush()
         timg.flatten()
         end = time.time()
         print (end - begin)
@@ -131,10 +141,10 @@ def randomstuff(timg, tdrawable):
     pr = l.get_pixel_rgn(0, 0, width, height)
     for i in xrange(0, width, 1):
         for j in xrange(0, height, 1):
-    	    pr[i,j] = chr(int(random.random()*255)) + chr(int(random.random()*255)) + chr(int(random.random()*255)) + chr(255) 
-    l.flush() 
+    	    pr[i,j] = chr(int(random.random()*255)) + chr(int(random.random()*255)) + chr(int(random.random()*255)) + chr(255)
+    l.flush()
     timg.flatten()
-    
+
 register(
         "GameofLife",
         "I hope this works",
@@ -144,9 +154,11 @@ register(
         "2006",
         "<Image>/Filters/Map/_Game of Life",
         "RGB*, GRAY*",
-        [],
+        [(PF_STRING, "automata", "specify rules", ""),
+         (PF_STRING, "color", "specify color", "")],
         [],
         gol)
+"""
 register(
         "GameofLife2",
         "I hope this works",
@@ -159,6 +171,7 @@ register(
         [],
         [],
         gol2)
+"""
 register(
         "random",
         "I hope this works",
